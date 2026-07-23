@@ -1,0 +1,14 @@
+logs-local/
+
+*.log
+
+!data/sample-auth.log
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+.DS_Store
+Thumbs.db
+.vscode/
