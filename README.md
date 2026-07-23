@@ -10,8 +10,6 @@ O projeto faz parte dos meus estudos em Linux, redes, suporte à infraestrutura,
 
 ## Status
 
-## Status
-
 Projeto em andamento.
 
 A estrutura inicial do repositório já foi criada, o ambiente Linux foi montado em máquina virtual e o OpenSSH Server foi instalado e verificado.
