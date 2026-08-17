@@ -34,7 +34,7 @@ Até o momento, foram documentadas as etapas de ambiente inicial e fundamentos d
 |---|---|---|
 | 00 | Ambiente e escopo do projeto | Concluído |
 | 01 | Fundamentos de SSH | Concluído |
-| 02 | Logs de autenticação no Linux | Pendente |
+| 02 | Logs de autenticação no Linux | Concluído |
 | 03 | Geração de eventos controlados | Pendente |
 | 04 | Análise manual dos logs | Pendente |
 | 05 | Lógica de detecção | Pendente |
@@ -59,8 +59,6 @@ Em cada etapa, procuro seguir uma estrutura simples:
 10. Registrar aprendizados, limitações e recomendações.
 
 A ideia não é começar pelo script, mas entender primeiro o que está acontecendo nos logs. A automação será feita depois da análise manual, para que o código seja baseado em eventos reais observados no laboratório.
-
-## Ambiente utilizado
 
 ## Ambiente utilizado
 
