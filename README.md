@@ -49,7 +49,7 @@ A etapa atual consiste em validar esse critério com eventos controlados antes d
 | 02 | Logs de autenticação no Linux | Concluído |
 | 03 | Geração de eventos controlados | Concluído |
 | 04 | Análise manual dos logs | Concluído |
-| 05 | Lógica de detecção | Em andamento |
+| 05 | Lógica de detecção | Condluído |
 | 06 | Automação com Python | Pendente |
 | 07 | Relatório de investigação | Pendente |
 | 08 | Hardening e recomendações | Pendente |
