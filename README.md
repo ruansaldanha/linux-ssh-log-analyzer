@@ -1,32 +1,44 @@
-# Linux SSH Log Analyzer: Análise de Logs SSH em Linux
+# Linux SSH Log Analyzer
 
 ## Sobre o projeto
 
-Este repositório reúne uma análise prática de logs de autenticação SSH em ambiente Linux.
+Este repositório documenta uma análise prática de logs de autenticação SSH em Linux.
 
-A proposta é observar como tentativas de login aparecem nos registros do sistema, interpretar eventos de autenticação e, depois da análise manual, criar uma automação simples em Python para identificar padrões suspeitos.
+A proposta é entender como diferentes tentativas de autenticação aparecem nos registros do sistema, analisar esses eventos manualmente e, a partir do comportamento observado, construir uma automação em Python capaz de identificar padrões que mereçam investigação.
 
-O projeto faz parte dos meus estudos em Linux, redes, suporte à infraestrutura, troubleshooting e segurança defensiva.
+O projeto faz parte dos meus estudos em Linux, redes, infraestrutura, troubleshooting e segurança defensiva.
 
 ## Status
 
 Projeto em andamento.
 
-A estrutura inicial do repositório já foi criada, o ambiente Linux foi montado em máquina virtual e o OpenSSH Server foi instalado e verificado.
-Até o momento, foram documentadas as etapas de ambiente inicial e fundamentos de SSH.
+Até o momento foram concluídas as etapas de configuração do laboratório, fundamentos de SSH, estudo dos logs de autenticação, geração de eventos controlados e análise manual dos registros.
+
+A lógica inicial de detecção também já foi definida e utiliza como regra principal:
+
+```text
+5 ou mais falhas de autenticação
+originadas do mesmo endereço IP
+dentro de uma janela de 60 segundos
+```
+
+Essa regra é uma heurística criada para o laboratório e não representa um padrão universal de segurança.
+
+A etapa atual consiste em validar esse critério com eventos controlados antes de iniciar a implementação do analisador em Python.
 
 ## Objetivos
 
-- Configurar um ambiente Linux em máquina virtual para testes controlados.
-- Entender o funcionamento básico do SSH em um servidor Linux.
-- Identificar onde ficam os logs de autenticação no Ubuntu.
-- Gerar tentativas controladas de login SSH.
-- Observar falhas de autenticação, usuários inexistentes e logins bem-sucedidos.
-- Analisar manualmente os registros antes de automatizar a leitura.
-- Criar um script em Python para processar logs SSH.
-- Identificar padrões simples, como várias falhas vindas do mesmo IP ou para o mesmo usuário.
-- Gerar um relatório com os principais eventos encontrados.
-- Registrar recomendações básicas de hardening para SSH.
+- Configurar um ambiente Linux para testes controlados.
+- Entender o funcionamento básico do SSH.
+- Identificar e consultar logs de autenticação no Ubuntu.
+- Gerar diferentes eventos de autenticação SSH.
+- Diferenciar logins bem-sucedidos, falhas de senha e usuários inexistentes.
+- Analisar manualmente os registros antes de automatizá-los.
+- Correlacionar eventos por usuário, endereço IP e intervalo de tempo.
+- Definir uma lógica simples de detecção.
+- Implementar a análise dos logs em Python.
+- Gerar um relatório com os eventos identificados.
+- Documentar recomendações básicas de hardening para SSH.
 
 ## Estudos documentados
 
@@ -35,9 +47,9 @@ Até o momento, foram documentadas as etapas de ambiente inicial e fundamentos d
 | 00 | Ambiente e escopo do projeto | Concluído |
 | 01 | Fundamentos de SSH | Concluído |
 | 02 | Logs de autenticação no Linux | Concluído |
-| 03 | Geração de eventos controlados | Pendente |
-| 04 | Análise manual dos logs | Pendente |
-| 05 | Lógica de detecção | Pendente |
+| 03 | Geração de eventos controlados | Concluído |
+| 04 | Análise manual dos logs | Concluído |
+| 05 | Lógica de detecção | Em andamento |
 | 06 | Automação com Python | Pendente |
 | 07 | Relatório de investigação | Pendente |
 | 08 | Hardening e recomendações | Pendente |
@@ -45,42 +57,53 @@ Até o momento, foram documentadas as etapas de ambiente inicial e fundamentos d
 
 ## Metodologia
 
-Em cada etapa, procuro seguir uma estrutura simples:
+O projeto segue uma abordagem progressiva:
 
-1. Definir o objetivo da etapa.
-2. Preparar ou revisar o ambiente.
-3. Gerar eventos de forma controlada.
-4. Observar os registros produzidos no Linux.
-5. Identificar informações importantes nos logs.
-6. Registrar evidências com prints.
-7. Analisar o comportamento observado.
-8. Relacionar a análise com suporte, infraestrutura e segurança defensiva.
-9. Automatizar partes repetitivas quando fizer sentido.
-10. Registrar aprendizados, limitações e recomendações.
+1. preparar e documentar o ambiente;
+2. compreender o funcionamento do serviço analisado;
+3. localizar e interpretar suas fontes de log;
+4. gerar eventos conhecidos de forma controlada;
+5. analisar manualmente os registros;
+6. identificar informações relevantes para correlação;
+7. definir e validar critérios de detecção;
+8. automatizar a análise em Python;
+9. organizar os resultados em um relatório;
+10. registrar limitações, aprendizados e recomendações.
 
-A ideia não é começar pelo script, mas entender primeiro o que está acontecendo nos logs. A automação será feita depois da análise manual, para que o código seja baseado em eventos reais observados no laboratório.
+A ideia é não começar pela automação.
+
+Primeiro, os eventos são produzidos e analisados manualmente para entender sua estrutura e contexto. Somente depois desse processo a lógica é transformada em código.
 
 ## Ambiente utilizado
 
-O ambiente principal utilizado neste projeto é:
+O laboratório utiliza:
 
 - Sistema host: Windows
 - Virtualizador: Oracle VirtualBox
-- Máquina virtual: Ubuntu 24.04.3 LTS
-- Hostname da VM: ubuntu-ssh-lab
-- Usuário utilizado no laboratório: vboxuser
+- Sistema da VM: Ubuntu 24.04.3 LTS
+- Hostname: `ubuntu-ssh-lab`
+- Usuário do laboratório: `vboxuser`
 - Serviço analisado: OpenSSH Server
-- Linguagem da automação: Python
-- Terminal: terminal Linux e Windows PowerShell
 - Rede: NAT + Host-only
+- Automação: Python
+- Terminais: Linux e Windows PowerShell
 
-## Ferramentas utilizadas
+A interface NAT fornece acesso à internet para a máquina virtual.
 
-- Ubuntu Linux
-- Oracle VirtualBox
+A interface Host-only permite a comunicação entre o Windows e o Ubuntu sem expor o serviço SSH diretamente à internet.
+
+## Tecnologias e ferramentas
+
+- Linux / Ubuntu
 - OpenSSH Server
-- Terminal Linux
+- Oracle VirtualBox
+- Bash e utilitários de linha de comando
+- `grep`
+- `awk`
+- `journalctl`
 - Python
+- Windows PowerShell
+- Git e GitHub
 
 ## Estrutura do repositório
 
@@ -99,16 +122,17 @@ linux-ssh-log-analyzer/
 │   ├── 06-automacao-com-python.md
 │   ├── 07-relatorio-de-investigacao.md
 │   ├── 08-hardening-e-recomendacoes.md
-│   └── conclusao.md
+│   └── 09-conclusao-geral.md
 ├── images/
 │   ├── 00-ambiente/
 │   ├── 01-ssh/
 │   ├── 02-logs/
 │   ├── 03-eventos-controlados/
 │   ├── 04-analise-manual/
-│   ├── 05-script-python/
-│   ├── 06-relatorio/
-│   └── 07-hardening/
+│   ├── 05-logica-deteccao/
+│   ├── 06-script-python/
+│   ├── 07-relatorio/
+│   └── 08-hardening/
 ├── logs-local/
 ├── notes/
 │   ├── comandos-usados.md
@@ -124,48 +148,135 @@ linux-ssh-log-analyzer/
 └── README.md
 ```
 
-A pasta `logs-local/` será usada apenas localmente para armazenar logs reais gerados na máquina virtual. Esses arquivos não serão publicados no GitHub.
+## Tratamento dos dados
 
-A pasta `data/` será usada para armazenar um log de exemplo anonimizado ou fictício, que poderá ser usado para testar o script sem expor informações do ambiente real.
+Os logs originais gerados no laboratório permanecem em:
 
-## Cuidados de privacidade
+```text
+logs-local/
+```
 
-Logs reais de autenticação podem conter informações do ambiente local, como nome de usuário, hostname, endereços IP internos e horários de acesso.
+Essa pasta é mantida fora do repositório por meio do `.gitignore`.
 
-Por isso, esses arquivos ficarão apenas na pasta `logs-local/`, configurada no `.gitignore`.
+Para os testes públicos da automação será utilizado:
 
-Nos documentos publicados, serão usados apenas prints selecionados e exemplos anonimizados, mantendo o valor técnico da análise sem expor dados sensíveis do laboratório.
+```text
+data/sample-auth.log
+```
 
-## Cuidados éticos
+Esse arquivo deverá conter apenas dados fictícios ou anonimizados.
 
-Este projeto será realizado apenas em ambiente próprio e controlado.
+As imagens utilizadas na documentação são selecionadas de forma a evitar a exposição desnecessária de informações do ambiente.
 
-O objetivo é estudar logs, autenticação SSH, análise defensiva e automação. Não serão realizados testes contra terceiros, varreduras em redes públicas ou tentativas de acesso a sistemas sem autorização.
+## Escopo e uso responsável
 
-As tentativas de login usadas no projeto serão geradas manualmente dentro do laboratório, apenas para produzir eventos suficientes para análise.
+Todos os testes são realizados em ambiente próprio e controlado.
 
-## Relação com segurança defensiva
+O projeto não envolve ataques contra terceiros, varreduras de redes externas, testes de credenciais em serviços públicos ou acesso a sistemas sem autorização.
 
-A análise de logs é uma habilidade importante para áreas como suporte técnico, infraestrutura, NOC, Blue Team e SOC.
+As tentativas de autenticação SSH são produzidas manualmente dentro do laboratório apenas para gerar eventos que possam ser estudados.
 
-Mesmo em eventos simples de autenticação SSH, já é possível praticar perguntas importantes:
+## O que já foi observado
+
+Os testes realizados até o momento permitiram identificar eventos como:
+
+```text
+Accepted password
+Failed password
+Invalid user
+Failed password for invalid user
+```
+
+A análise manual também mostrou que uma única tentativa pode produzir mais de uma linha no log.
+
+Por exemplo:
+
+```text
+Invalid user usuario_teste
+Failed password for invalid user usuario_teste
+```
+
+Por isso, a quantidade de linhas encontradas não deve ser interpretada automaticamente como a quantidade de tentativas realizadas.
+
+Também foram analisados:
+
+- endereço IP de origem;
+- usuário envolvido;
+- resultado da autenticação;
+- intervalo entre falhas;
+- porta de origem;
+- relação entre eventos da mesma conexão.
+
+## Lógica inicial de detecção
+
+A primeira regra definida pelo projeto considera potencialmente suspeito o seguinte comportamento:
+
+```text
+falhas >= 5
+AND
+mesmo IP de origem
+AND
+intervalo <= 60 segundos
+```
+
+Essa classificação não confirma um ataque de força bruta.
+
+O objetivo é apenas destacar um conjunto de eventos que ultrapassou o limite definido para o laboratório e que merece análise.
+
+O valor escolhido será validado antes da implementação em Python.
+
+## Relação com infraestrutura e segurança defensiva
+
+Mesmo em um laboratório simples de autenticação SSH, é possível praticar perguntas importantes:
 
 ```text
 Quem tentou acessar?
-Qual usuário foi usado?
-A tentativa falhou ou teve sucesso?
+Qual usuário foi utilizado?
+A autenticação falhou ou teve sucesso?
 O usuário existe no sistema?
-Qual IP originou a tentativa?
-Houve várias falhas em sequência?
-Houve login aceito depois de várias falhas?
-O comportamento observado parece normal ou suspeito?
+Qual IP originou a conexão?
+Quantas falhas ocorreram?
+Em quanto tempo elas ocorreram?
+Os eventos pertencem à mesma conexão?
+O comportamento merece investigação?
 ```
 
-Essas perguntas ajudam a transformar registros do sistema em uma investigação. Esse tipo de raciocínio é útil para troubleshooting, análise de alertas, resposta a incidentes e monitoramento de ambientes Linux.
+Esse tipo de raciocínio pode ser aplicado em atividades de troubleshooting, administração de sistemas, monitoramento, Blue Team e SOC.
+
+O objetivo do projeto não é apenas detectar falhas de autenticação, mas praticar a transformação de registros técnicos em informações úteis para investigação.
+
+## Próximas etapas
+
+A sequência planejada é:
+
+1. validar a regra inicial de detecção;
+2. preparar um log de exemplo para testes;
+3. implementar o parser em Python;
+4. aplicar a regra automaticamente;
+5. organizar os resultados em um relatório;
+6. documentar recomendações de hardening;
+7. registrar as conclusões do projeto.
 
 ## Resultado esperado
 
-Ao final do projeto, espero ter uma documentação clara mostrando como o ambiente foi montado, como os eventos SSH foram gerados, como os logs foram analisados e como a automação em Python foi construída.
+Ao final do projeto, o repositório deverá demonstrar todo o processo utilizado:
 
-O objetivo final é demonstrar raciocínio investigativo, organização de evidências, noções de Linux e uma base prática em segurança defensiva.
+```text
+ambiente
+    ↓
+eventos SSH
+    ↓
+logs
+    ↓
+análise manual
+    ↓
+lógica de detecção
+    ↓
+automação em Python
+    ↓
+relatório
+    ↓
+hardening e conclusões
+```
 
+Mais do que apresentar um script pronto, o objetivo é demonstrar o raciocínio utilizado para compreender os registros, definir critérios, reconhecer limitações e automatizar uma análise baseada em evidências observadas no laboratório.
