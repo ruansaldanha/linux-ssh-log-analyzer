@@ -114,7 +114,7 @@ Esse valor é uma heurística criada especificamente para o laboratório.
 
 Ele não representa um padrão universal de segurança e não deve ser interpretado como um limite ideal para ambientes reais.
 
-O objetivo é possuir um critério simples que possa ser testado, compreendido e posteriormente implementado em Python.
+O limite definido foi validado em 28/10/2026, por meio de um teste controlado que produziu seis falhas de autenticação SSH do mesmo endereço IP, com registros concentrados em aproximadamente 30 segundos.
 
 ## Comportamentos abaixo do limite
 
@@ -259,7 +259,7 @@ Por isso, a regra definida neste projeto deve ser entendida apenas como um ponto
 
 ## Validação da regra
 
-Antes da implementação em Python, a lógica será validada utilizando dois cenários controlados.
+A lógica foi avaliada por meio de dois cenários controlados: um abaixo do limite estabelecido e outro acima dele. O objetivo foi verificar manualmente se os eventos observados atendiam às condições da regra antes de iniciar sua implementação em Python.
 
 ### Cenário abaixo do limite
 
@@ -279,24 +279,73 @@ Evento registrado
 Nenhum alerta pela regra principal
 ```
 
-### Cenário acima do limite
 
-Será gerado um novo conjunto controlado contendo:
+### Cenário acima do limite — Validado
+
+Em 28/10/2026, foi realizado um teste controlado de autenticação SSH utilizando o usuário `vboxuser`, a partir do Windows, conectado à VM Ubuntu pela rede Host-only.
+
+O objetivo foi gerar cinco ou mais falhas de autenticação originadas do mesmo endereço IP dentro de uma janela de 60 segundos.
+
+#### Resultados observados
+
+Os registros foram consultados em `/var/log/auth.log` e apresentaram:
+
+| Horário | Evento | Falhas contabilizadas |
+|---|---|---|
+| 16:32:03 | Failed password | 1 |
+| 16:32:12 | message repeated 2 times | 2 |
+| 16:32:22 | Failed password | 1 |
+| 16:32:33 | message repeated 2 times | 2 |
+| **Total** | | **6** |
+
+- IP de origem: `192.168.56.1`
+- Usuário: `vboxuser`
+- Total de falhas: 6
+- Intervalo entre o primeiro registro e o último registro de falha: aproximadamente 30,10 segundos
+- Regra definida: 5 ou mais falhas do mesmo IP em até 60 segundos
+
+#### Particularidades dos registros
+
+Durante a análise, observou-se que algumas mensagens idênticas foram agrupadas no formato:
 
 ```text
-5 ou mais falhas
-mesmo IP
-intervalo máximo de 60 segundos
+message repeated 2 times: [Failed password ...]
 ```
 
-Resultado esperado:
+Esse registro representa duas ocorrências adicionais da mensagem original.
+
+Portanto, a contagem de falhas não pode considerar apenas a quantidade de linhas que apresentam diretamente `Failed password`.
+
+Também foi observado que o próprio comando `sudo grep` apareceu no resultado da consulta, pois a linha de auditoria do `sudo` continha a expressão pesquisada.
+
+Esse registro não corresponde a uma tentativa de autenticação SSH e deve ser desconsiderado.
+
+Outra limitação é que os registros agrupados não apresentam os horários individuais de cada repetição. O intervalo informado corresponde aos timestamps visíveis no log.
+
+#### Resultado da validação
+
+O cenário apresentou seis falhas de autenticação originadas do mesmo IP, com registros concentrados em aproximadamente 30 segundos.
+
+Portanto, o comportamento atende à regra definida para o laboratório:
 
 ```text
-Comportamento potencialmente suspeito
-Alerta pela regra principal
+falhas >= 5
+AND
+mesmo IP de origem
+AND
+intervalo <= 60 segundos
 ```
 
-A comparação entre os dois cenários permitirá verificar se o critério definido diferencia corretamente eventos abaixo e acima do limite estabelecido.
+**Classificação:** comportamento potencialmente suspeito.
+
+Essa classificação não confirma a ocorrência de um ataque de força bruta, apenas identifica um padrão que merece investigação.
+
+#### Evidência
+
+![Validação da regra de detecção: seis falhas em aproximadamente 30 segundos](../images/05-logica-deteccao/01-validacao-6-falhas-em-30s.png)
+
+O teste confirmou que a regra consegue diferenciar os cenários documentados abaixo e acima do limite estabelecido, considerando as evidências disponíveis no laboratório.
+
 
 ## Implementação futura
 
@@ -313,6 +362,4 @@ A primeira versão do script deverá:
 7. verificar se cinco ou mais falhas ocorreram dentro de 60 segundos;
 8. apresentar as evidências e a classificação encontrada.
 
-A implementação será realizada somente após a validação manual da regra.
-
-Essa sequência mantém a metodologia adotada no projeto: primeiro compreender os eventos, depois definir e testar a lógica e, por fim, automatizar a análise.
+Com a validação manual concluída, a próxima etapa será implementar o analisador em Python, considerando os formatos de log observados e as limitações identificadas durante os testes.

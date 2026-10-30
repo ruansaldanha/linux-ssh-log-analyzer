@@ -1,0 +1,5 @@
+
+2026-10-28T17:00:00+00:00 ubuntu-ssh-lab sshd[7001]: Failed password for vboxuser from 192.0.2.70 port 61000 ssh2
+2026-10-28T17:00:10+00:00 ubuntu-ssh-lab sshd[7002]: message repeated 5 times: [Accepted password for vboxuser from 192.0.2.70 port 61001 ssh2]
+2026-10-28T17:00:15+00:00 ubuntu-ssh-lab sshd[7003]: message repeated 3 times: [Invalid user usuario_teste from 192.0.2.80 port 61002]
+2026-10-28T17:00:20+00:00 ubuntu-ssh-lab sshd[7003]: Failed password for invalid user usuario_teste from 192.0.2.80 port 61002 ssh2

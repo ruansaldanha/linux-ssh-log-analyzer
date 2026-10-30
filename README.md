@@ -24,7 +24,9 @@ dentro de uma janela de 60 segundos
 
 Essa regra é uma heurística criada para o laboratório e não representa um padrão universal de segurança.
 
-A etapa atual consiste em validar esse critério com eventos controlados antes de iniciar a implementação do analisador em Python.
+A regra de detecção foi validada em laboratório, utilizando eventos controlados de autenticação SSH. O teste produziu seis falhas provenientes do mesmo IP, com registros concentrados em aproximadamente 30 segundos, atendendo ao critério estabelecido.
+
+A próxima etapa consiste em desenvolver o analisador em Python, responsável por interpretar os registros, correlacionar os eventos e identificar comportamentos potencialmente suspeitos.
 
 ## Objetivos
 

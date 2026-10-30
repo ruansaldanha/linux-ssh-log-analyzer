@@ -1,0 +1,9 @@
+
+2026-10-28T16:32:03+00:00 ubuntu-ssh-lab sshd[4209]: Failed password for vboxuser from 192.0.2.10 port 59227 ssh2
+2026-10-28T16:32:12+00:00 ubuntu-ssh-lab sshd[4209]: message repeated 2 times: [Failed password for vboxuser from 192.0.2.10 port 59227 ssh2]
+2026-10-28T16:34:22+00:00 ubuntu-ssh-lab sshd[4211]: Failed password for vboxuser from 192.0.2.10 port 59241 ssh2
+2026-10-28T16:34:33+00:00 ubuntu-ssh-lab sshd[4211]: message repeated 2 times: [Failed password for vboxuser from 192.0.2.10 port 59241 ssh2]
+2026-10-28T16:34:10+00:00 ubuntu-ssh-lab sshd[4300]: Accepted password for vboxuser from 192.0.2.10 port 59300 ssh2
+2026-10-28T16:35:01+00:00 ubuntu-ssh-lab sshd[4310]: Invalid user usuario_teste from 192.0.2.20 port 59400
+2026-10-28T16:35:05+00:00 ubuntu-ssh-lab sshd[4310]: Failed password for invalid user usuario_teste from 192.0.2.20 port 59400 ssh2
+2026-10-28T16:36:00+00:00 ubuntu-ssh-lab sudo: vboxuser : COMMAND=/usr/bin/grep 'Failed password' /var/log/auth.log
