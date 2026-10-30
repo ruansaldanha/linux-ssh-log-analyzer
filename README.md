@@ -1,284 +1,97 @@
 # Linux SSH Log Analyzer
 
-## Sobre o projeto
+Projeto prático de **análise defensiva de logs de autenticação SSH** em Linux. O laboratório foi construído de forma progressiva: preparação da VM Ubuntu, geração controlada de eventos, análise manual de registros, criação de uma regra de detecção e automação com Python.
 
-Este repositório documenta uma análise prática de logs de autenticação SSH em Linux.
+> **Status:** etapas 00 a 07 concluídas. Etapa 08 (hardening SSH) em preparação; conclusão geral pendente.
 
-A proposta é entender como diferentes tentativas de autenticação aparecem nos registros do sistema, analisar esses eventos manualmente e, a partir do comportamento observado, construir uma automação em Python capaz de identificar padrões que mereçam investigação.
+## O que o analisador faz
 
-O projeto faz parte dos meus estudos em Linux, redes, infraestrutura, troubleshooting e segurança defensiva.
+- Lê arquivos de log com timestamps ISO 8601 nos formatos previstos pelo laboratório.
+- Reconhece `Failed password`, `Accepted password`, `Invalid user` e registros `message repeated N times`.
+- Extrai timestamp, usuário e IP IPv4; contabiliza falhas por endereço de origem.
+- Aplica uma **janela deslizante de 60 segundos**: cinco ou mais falhas do mesmo IP geram um alerta de *comportamento potencialmente suspeito*.
+- Exporta alertas em CSV e um resumo técnico em Markdown.
 
-## Status
+**Importante:** um alerta não confirma invasão ou força bruta. O limite é uma heurística didática; mensagens agrupadas não fornecem timestamps individuais, o que limita a precisão temporal.
 
-Projeto em andamento.
+## Executar
 
-Até o momento foram concluídas as etapas de configuração do laboratório, fundamentos de SSH, estudo dos logs de autenticação, geração de eventos controlados e análise manual dos registros.
+**Requisitos:** Python 3.10+; nenhuma dependência externa. No PowerShell, use `python` ou `python3`, conforme a instalação.
 
-A lógica inicial de detecção também já foi definida e utiliza como regra principal:
+Na raiz do repositório:
 
-```text
-5 ou mais falhas de autenticação
-originadas do mesmo endereço IP
-dentro de uma janela de 60 segundos
+```bash
+python3 src/ssh_log_analyzer.py
+python3 src/ssh_log_analyzer.py teste-multiplos-ips.log
 ```
 
-Essa regra é uma heurística criada para o laboratório e não representa um padrão universal de segurança.
+O primeiro comando analisa `data/sample-auth.log`; o segundo analisa o arquivo informado, localizado em `data/`. O programa imprime os eventos reconhecidos e gera:
 
-A regra de detecção foi validada em laboratório, utilizando eventos controlados de autenticação SSH. O teste produziu seis falhas provenientes do mesmo IP, com registros concentrados em aproximadamente 30 segundos, atendendo ao critério estabelecido.
+- `reports/resultado-analise.csv` — lista de alertas encontrados, com separador `;`.
+- `reports/relatorio-investigacao.md` — resumo da análise, contagem por IP e limitações.
 
-A próxima etapa consiste em desenvolver o analisador em Python, responsável por interpretar os registros, correlacionar os eventos e identificar comportamentos potencialmente suspeitos.
+**Atenção:** os dois arquivos de saída acima são **sobrescritos** a cada execução. Exemplos preservados estão em `reports/resultado-com-alerta.csv`, `reports/resultado-sem-alerta.csv`, `reports/relatorio-com-alerta.md` e `reports/relatorio-sem-alerta.md`.
 
-## Objetivos
+## Cenários e testes
 
-- Configurar um ambiente Linux para testes controlados.
-- Entender o funcionamento básico do SSH.
-- Identificar e consultar logs de autenticação no Ubuntu.
-- Gerar diferentes eventos de autenticação SSH.
-- Diferenciar logins bem-sucedidos, falhas de senha e usuários inexistentes.
-- Analisar manualmente os registros antes de automatizá-los.
-- Correlacionar eventos por usuário, endereço IP e intervalo de tempo.
-- Definir uma lógica simples de detecção.
-- Implementar a análise dos logs em Python.
-- Gerar um relatório com os eventos identificados.
-- Documentar recomendações básicas de hardening para SSH.
+| Arquivo em `data/` | Comportamento esperado |
+|---|---|
+| `sample-auth.log` | 6 falhas em 30 segundos para `192.0.2.10`: **alerta** |
+| `teste-acima-60s.log` | 6 falhas distribuídas em grupos separados: **sem alerta** |
+| `teste-limite-60s.log` | 5 falhas em exatamente 60 segundos: **alerta** |
+| `teste-limite-61s.log` | 5 falhas em 61 segundos: **sem alerta** |
+| `teste-multiplos-ips.log` | 7 falhas distribuídas entre 3 IPs: **sem alerta** |
+| `teste-repeticoes-nao-falhas.log` | Repetições de sucesso/usuário inválido não contam como falhas |
 
-## Estudos documentados
+Para executar os testes automatizados (biblioteca padrão `unittest`):
 
-| Parte | Tema | Status |
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Os testes cobrem cenários positivos, negativos, limites temporais, agrupamento por IP, mensagens repetidas e geração dos relatórios. As capturas dos testes manuais continuam disponíveis na documentação.
+
+## Etapas do projeto
+
+| Etapa | Documento | Situação |
 |---|---|---|
-| 00 | Ambiente e escopo do projeto | Concluído |
-| 01 | Fundamentos de SSH | Concluído |
-| 02 | Logs de autenticação no Linux | Concluído |
-| 03 | Geração de eventos controlados | Concluído |
-| 04 | Análise manual dos logs | Concluído |
-| 05 | Lógica de detecção | Condluído |
-| 06 | Automação com Python | Pendente |
-| 07 | Relatório de investigação | Pendente |
-| 08 | Hardening e recomendações | Pendente |
-| 09 | Conclusão geral | Pendente |
+| 00 | [Ambiente e escopo](docs/00-ambiente-e-escopo.md) | Concluída |
+| 01 | [Fundamentos de SSH](docs/01-fundamentos-ssh.md) | Concluída |
+| 02 | [Logs de autenticação Linux](docs/02-logs-de-autenticacao-linux.md) | Concluída |
+| 03 | [Eventos controlados](docs/03-geracao-de-eventos-controlados.md) | Concluída |
+| 04 | [Análise manual](docs/04-analise-manual-dos-logs.md) | Concluída |
+| 05 | [Lógica de detecção](docs/05-logica-de-deteccao.md) | Concluída |
+| 06 | [Automação em Python](docs/06-automacao-com-python.md) | Concluída |
+| 07 | [Relatório de investigação](docs/07-relatorio-de-investigacao.md) | Concluída |
+| 08 | [Hardening e recomendações](docs/08-hardening-e-recomendacoes.md) | Em preparação |
+| 09 | [Conclusão](docs/conclusao.md) | Pendente |
 
-## Metodologia
+## Evidências e relatórios
 
-O projeto segue uma abordagem progressiva:
+- [Teste controlado da regra](docs/05-logica-de-deteccao.md#validação-da-regra) e imagem em `images/05-logica-deteccao/`.
+- [Sete evidências dos testes de Python](docs/06-automacao-com-python.md#evidências).
+- [Três evidências dos relatórios](docs/07-relatorio-de-investigacao.md#8-evidências).
+- [Exemplo de interpretação humana dos achados](reports/relatorio-incidente-exemplo.md).
 
-1. preparar e documentar o ambiente;
-2. compreender o funcionamento do serviço analisado;
-3. localizar e interpretar suas fontes de log;
-4. gerar eventos conhecidos de forma controlada;
-5. analisar manualmente os registros;
-6. identificar informações relevantes para correlação;
-7. definir e validar critérios de detecção;
-8. automatizar a análise em Python;
-9. organizar os resultados em um relatório;
-10. registrar limitações, aprendizados e recomendações.
-
-A ideia é não começar pela automação.
-
-Primeiro, os eventos são produzidos e analisados manualmente para entender sua estrutura e contexto. Somente depois desse processo a lógica é transformada em código.
-
-## Ambiente utilizado
-
-O laboratório utiliza:
-
-- Sistema host: Windows
-- Virtualizador: Oracle VirtualBox
-- Sistema da VM: Ubuntu 24.04.3 LTS
-- Hostname: `ubuntu-ssh-lab`
-- Usuário do laboratório: `vboxuser`
-- Serviço analisado: OpenSSH Server
-- Rede: NAT + Host-only
-- Automação: Python
-- Terminais: Linux e Windows PowerShell
-
-A interface NAT fornece acesso à internet para a máquina virtual.
-
-A interface Host-only permite a comunicação entre o Windows e o Ubuntu sem expor o serviço SSH diretamente à internet.
-
-## Tecnologias e ferramentas
-
-- Linux / Ubuntu
-- OpenSSH Server
-- Oracle VirtualBox
-- Bash e utilitários de linha de comando
-- `grep`
-- `awk`
-- `journalctl`
-- Python
-- Windows PowerShell
-- Git e GitHub
-
-## Estrutura do repositório
+## Estrutura principal
 
 ```text
-linux-ssh-log-analyzer/
-├── data/
-│   ├── README.md
-│   └── sample-auth.log
-├── docs/
-│   ├── 00-ambiente-e-escopo.md
-│   ├── 01-fundamentos-ssh.md
-│   ├── 02-logs-de-autenticacao-linux.md
-│   ├── 03-geracao-de-eventos-controlados.md
-│   ├── 04-analise-manual-dos-logs.md
-│   ├── 05-logica-de-deteccao.md
-│   ├── 06-automacao-com-python.md
-│   ├── 07-relatorio-de-investigacao.md
-│   ├── 08-hardening-e-recomendacoes.md
-│   └── 09-conclusao-geral.md
-├── images/
-│   ├── 00-ambiente/
-│   ├── 01-ssh/
-│   ├── 02-logs/
-│   ├── 03-eventos-controlados/
-│   ├── 04-analise-manual/
-│   ├── 05-logica-deteccao/
-│   ├── 06-script-python/
-│   ├── 07-relatorio/
-│   └── 08-hardening/
-├── logs-local/
-├── notes/
-│   ├── comandos-usados.md
-│   ├── problemas-e-solucoes.md
-│   └── regex-utilizadas.md
-├── reports/
-│   ├── relatorio-incidente-exemplo.md
-│   └── resultado-analise.csv
-├── src/
-│   ├── README.md
-│   └── ssh_log_analyzer.py
-├── .gitignore
-└── README.md
+data/       Logs sintéticos reproduzíveis (IPs reservados para documentação)
+docs/       Etapas detalhadas, métodos, resultados e limitações
+images/     Capturas de tela das evidências
+notes/      Comandos e anotações do laboratório
+reports/    Relatórios CSV e Markdown
+src/        Código do analisador
+tests/      Testes automatizados com unittest
+logs-local/ Logs originais do laboratório, excluídos do Git
 ```
 
-## Tratamento dos dados
+## Ambiente e uso responsável
 
-Os logs originais gerados no laboratório permanecem em:
+O laboratório foi realizado com Windows, VirtualBox, Ubuntu 24.04.3 LTS, OpenSSH Server e rede NAT + Host-only. Os arquivos públicos em `data/` são **sintéticos**, com IPs de documentação `192.0.2.0/24`. Os registros reais permanecem em `logs-local/`, ignorado pelo Git.
 
-```text
-logs-local/
-```
+Os testes de autenticação descritos neste projeto ocorreram em ambiente próprio e controlado. O analisador **não inicia conexões SSH nem realiza tentativas de login**: ele processa registros previamente coletados.
 
-Essa pasta é mantida fora do repositório por meio do `.gitignore`.
+## Limitações e próximos passos
 
-Para os testes públicos da automação será utilizado:
-
-```text
-data/sample-auth.log
-```
-
-Esse arquivo deverá conter apenas dados fictícios ou anonimizados.
-
-As imagens utilizadas na documentação são selecionadas de forma a evitar a exposição desnecessária de informações do ambiente.
-
-## Escopo e uso responsável
-
-Todos os testes são realizados em ambiente próprio e controlado.
-
-O projeto não envolve ataques contra terceiros, varreduras de redes externas, testes de credenciais em serviços públicos ou acesso a sistemas sem autorização.
-
-As tentativas de autenticação SSH são produzidas manualmente dentro do laboratório apenas para gerar eventos que possam ser estudados.
-
-## O que já foi observado
-
-Os testes realizados até o momento permitiram identificar eventos como:
-
-```text
-Accepted password
-Failed password
-Invalid user
-Failed password for invalid user
-```
-
-A análise manual também mostrou que uma única tentativa pode produzir mais de uma linha no log.
-
-Por exemplo:
-
-```text
-Invalid user usuario_teste
-Failed password for invalid user usuario_teste
-```
-
-Por isso, a quantidade de linhas encontradas não deve ser interpretada automaticamente como a quantidade de tentativas realizadas.
-
-Também foram analisados:
-
-- endereço IP de origem;
-- usuário envolvido;
-- resultado da autenticação;
-- intervalo entre falhas;
-- porta de origem;
-- relação entre eventos da mesma conexão.
-
-## Lógica inicial de detecção
-
-A primeira regra definida pelo projeto considera potencialmente suspeito o seguinte comportamento:
-
-```text
-falhas >= 5
-AND
-mesmo IP de origem
-AND
-intervalo <= 60 segundos
-```
-
-Essa classificação não confirma um ataque de força bruta.
-
-O objetivo é apenas destacar um conjunto de eventos que ultrapassou o limite definido para o laboratório e que merece análise.
-
-O valor escolhido será validado antes da implementação em Python.
-
-## Relação com infraestrutura e segurança defensiva
-
-Mesmo em um laboratório simples de autenticação SSH, é possível praticar perguntas importantes:
-
-```text
-Quem tentou acessar?
-Qual usuário foi utilizado?
-A autenticação falhou ou teve sucesso?
-O usuário existe no sistema?
-Qual IP originou a conexão?
-Quantas falhas ocorreram?
-Em quanto tempo elas ocorreram?
-Os eventos pertencem à mesma conexão?
-O comportamento merece investigação?
-```
-
-Esse tipo de raciocínio pode ser aplicado em atividades de troubleshooting, administração de sistemas, monitoramento, Blue Team e SOC.
-
-O objetivo do projeto não é apenas detectar falhas de autenticação, mas praticar a transformação de registros técnicos em informações úteis para investigação.
-
-## Próximas etapas
-
-A sequência planejada é:
-
-1. validar a regra inicial de detecção;
-2. preparar um log de exemplo para testes;
-3. implementar o parser em Python;
-4. aplicar a regra automaticamente;
-5. organizar os resultados em um relatório;
-6. documentar recomendações de hardening;
-7. registrar as conclusões do projeto.
-
-## Resultado esperado
-
-Ao final do projeto, o repositório deverá demonstrar todo o processo utilizado:
-
-```text
-ambiente
-    ↓
-eventos SSH
-    ↓
-logs
-    ↓
-análise manual
-    ↓
-lógica de detecção
-    ↓
-automação em Python
-    ↓
-relatório
-    ↓
-hardening e conclusões
-```
-
-Mais do que apresentar um script pronto, o objetivo é demonstrar o raciocínio utilizado para compreender os registros, definir critérios, reconhecer limitações e automatizar uma análise baseada em evidências observadas no laboratório.
+O parser foi projetado para o formato ISO e os padrões de autenticação por senha usados no laboratório; não inclui IPv6, todos os formatos de syslog, outros métodos SSH nem correlação avançada. Um alerta por IP é emitido por execução. O próximo trabalho prático é avaliar configurações efetivas do `sshd`, testar autenticação por chave e documentar medidas de hardening sem perder o acesso à VM.

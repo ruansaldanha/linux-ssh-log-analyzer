@@ -1,6 +1,5 @@
-
 2026-10-28T16:32:00+00:00 ubuntu-ssh-lab sshd[5001]: Failed password for vboxuser from 192.0.2.30 port 51001 ssh2
 2026-10-28T16:32:15+00:00 ubuntu-ssh-lab sshd[5002]: Failed password for vboxuser from 192.0.2.30 port 51002 ssh2
 2026-10-28T16:32:30+00:00 ubuntu-ssh-lab sshd[5003]: Failed password for vboxuser from 192.0.2.30 port 51003 ssh2
 2026-10-28T16:32:45+00:00 ubuntu-ssh-lab sshd[5004]: Failed password for vboxuser from 192.0.2.30 port 51004 ssh2
-2026-10-28T16:33:01+00:00 ubuntu-ssh-lab sshd[5005]: Failed password for vboxuser from 192.0.2.30 port 51005 ssh2
+2026-10-28T16:33:00+00:00 ubuntu-ssh-lab sshd[5005]: Failed password for vboxuser from 192.0.2.30 port 51005 ssh2
